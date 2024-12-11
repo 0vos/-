@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Huffman Compression</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="sidebar">
+        <button onclick="showUploadForm()">上传文件</button>
+        <button onclick="showStringInput()">手动输入字符串</button>
+        <button onclick="showRandomString()">生成随机字符串</button>
+    </div>
+
+    <div class="main-content">
+        <div id="upload-form" class="form-section" style="display: none;">
+            <h2>上传文件</h2>
+            <input type="file" id="file-input" />
+            <button onclick="uploadFile()">上传</button>
+            <div id="file-content"></div>
+        </div>
+
+        <div id="string-input" class="form-section" style="display: none;">
+            <h2>输入字符串</h2>
+            <input type="text" id="input-string" />
+            <button onclick="generateHandWrittenString()">展示输入的字符串</button>
+            <div id="encoded-output"></div>
+        </div>
+
+        <div id="random-string" class="form-section" style="display: none;">
+            <button onclick="generateRandomString()">生成随机字符串</button>
+            <div id="random-output"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
