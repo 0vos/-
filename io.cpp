@@ -2,7 +2,6 @@
 #include <fstream>
 #include <string>
 #include <random>
-#include "blocks.cpp"
 using namespace std;
 
 // 获取图片文件信息
@@ -91,8 +90,8 @@ void recover_image(const string& file_path, string content){
 }
 
 // test
-int main(){
-    string file_path = "data/test_origin.txt";
-    save_origin(file_path, "Me");
-    return 0;
-}
+// int main(){
+//     string file_path = "data/test_origin.txt";
+//     save_origin(file_path, "Me");
+//     return 0;
+// }

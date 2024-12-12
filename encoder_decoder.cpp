@@ -174,9 +174,9 @@ string decode(string* pair){
 }
 
 // test
-int main(){
-    string list[2];
-    encode("  Hello\nworld!", list);
-    cout << list[0] << "###" << list[1] << endl;
-    return 0;
-}
+// int main(){
+//     string list[2];
+//     encode("  Hello\nworld!", list);
+//     cout << list[0] << "###" << list[1] << endl;
+//     return 0;
+// }
