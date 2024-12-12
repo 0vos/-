@@ -16,7 +16,10 @@
 该项目实现了一个轻量级的C++哈夫曼压缩软件，具体来说是后端的哈夫曼算法和压缩文件生成，前端显示用户界面进行输入和展示操作
 ## Quick Start
 - 运行server.cpp
-- 将index.html拖入Chrome浏览器中，用浏览器打开该文件
+- 在浏览器中输入
+  ```
+  localhost:8080
+  ```
 ## 我们需要做什么：
 ### 1. Liusi & Haoyuan
 - 读懂并跑通主程序encoder_decoder.cpp
