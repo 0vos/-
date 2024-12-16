@@ -43,7 +43,42 @@ function uploadFile() {
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('file-content').innerText = "上传成功！" + data.encoded;
+                // 显示编码内容
+                const encodedContent = data.encoded_content;
+                document.getElementById('encoded-output').innerHTML = `<h3>编码内容: ${encodedContent}</h3>`;
+                    
+                // 生成编码对照表
+                const encodingTable = data.encoding_table;
+                const table = document.createElement('table');
+                table.border = "1";
+                    
+                // 创建表头
+                const thead = document.createElement('thead');
+                const headerRow = document.createElement('tr');
+                const thKey = document.createElement('th');
+                thKey.textContent = "字符";
+                const thValue = document.createElement('th');
+                thValue.textContent = "编码";
+                headerRow.appendChild(thKey);
+                headerRow.appendChild(thValue);
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+                    
+                // 创建表体
+                const tbody = document.createElement('tbody');
+                for (const [character, code] of Object.entries(encodingTable)) {
+                    const row = document.createElement('tr');
+                    const tdCharacter = document.createElement('td');
+                    tdCharacter.textContent = character;
+                    const tdCode = document.createElement('td');
+                    tdCode.textContent = code;
+                    row.appendChild(tdCharacter);
+                    row.appendChild(tdCode);
+                    tbody.appendChild(row);
+                }
+            
+                table.appendChild(tbody);
+                document.getElementById('file-content').appendChild(table);
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -84,17 +119,52 @@ function uploadFile() {
 }
 
 function generateHandWrittenString() {
-    const input_string = document.getElementById('input-string').value
-    fetch('http://localhost:8080/string_input',{
+    const input_string = document.getElementById('input-string').value;
+    fetch('http://localhost:8080/string_input', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({string: input_string}),
+        body: JSON.stringify({ string: input_string }),
     })
     .then(response => response.json())
     .then(data => {
-        document.getElementById('encoded-output').innerText = "输入的字符串：" + data.encoded;
+        // 显示编码内容
+        const encodedContent = data.encoded_content;
+        document.getElementById('encoded-output').innerHTML = `<h3>编码内容: ${encodedContent}</h3>`;
+
+        // 生成编码对照表
+        const encodingTable = data.encoding_table;
+        const table = document.createElement('table');
+        table.border = "1";
+
+        // 创建表头
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        const thKey = document.createElement('th');
+        thKey.textContent = "字符";
+        const thValue = document.createElement('th');
+        thValue.textContent = "编码";
+        headerRow.appendChild(thKey);
+        headerRow.appendChild(thValue);
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // 创建表体
+        const tbody = document.createElement('tbody');
+        for (const [character, code] of Object.entries(encodingTable)) {
+            const row = document.createElement('tr');
+            const tdCharacter = document.createElement('td');
+            tdCharacter.textContent = character;
+            const tdCode = document.createElement('td');
+            tdCode.textContent = code;
+            row.appendChild(tdCharacter);
+            row.appendChild(tdCode);
+            tbody.appendChild(row);
+        }
+
+        table.appendChild(tbody);
+        document.getElementById('encoded-output').appendChild(table);
     })
     .catch(error => {
         document.getElementById('encoded-output').innerText = "输入失败：" + error;
@@ -105,7 +175,42 @@ function generateRandomString() {
     fetch('http://localhost:8080/random_string')
     .then(response => response.json())
     .then(data => {
-        document.getElementById('random-output').innerText = "随机字符串：" + data.random_string;
+        // 显示编码内容
+        const encodedContent = data.encoded_content;
+        document.getElementById('encoded-output').innerHTML = `<h3>编码内容: ${encodedContent}</h3>`;
+
+        // 生成编码对照表
+        const encodingTable = data.encoding_table;
+        const table = document.createElement('table');
+        table.border = "1";
+
+        // 创建表头
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        const thKey = document.createElement('th');
+        thKey.textContent = "字符";
+        const thValue = document.createElement('th');
+        thValue.textContent = "编码";
+        headerRow.appendChild(thKey);
+        headerRow.appendChild(thValue);
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        // 创建表体
+        const tbody = document.createElement('tbody');
+        for (const [character, code] of Object.entries(encodingTable)) {
+            const row = document.createElement('tr');
+            const tdCharacter = document.createElement('td');
+            tdCharacter.textContent = character;
+            const tdCode = document.createElement('td');
+            tdCode.textContent = code;
+            row.appendChild(tdCharacter);
+            row.appendChild(tdCode);
+            tbody.appendChild(row);
+        }
+
+        table.appendChild(tbody);
+        document.getElementById('random-output').appendChild(table);
     })
     .catch(error => {
         document.getElementById('random-output').innerText = "生成失败：" + error;
