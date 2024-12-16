@@ -199,10 +199,10 @@ string decode(string pair[2]){
 }
 
 // test
-int main(){
-    string list[2];
-    encode("  Hello\nworld!", list);
-    cout << list[0] <<endl << list[1] << endl;
-    cout<<decode(list)<<endl;
-    return 0;
-}
+// int main(){
+//     string list[2];
+//     encode("  Hello\nworld!", list);
+//     cout << list[0] <<endl << list[1] << endl;
+//     cout<<decode(list)<<endl;
+//     return 0;
+// }

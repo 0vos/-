@@ -19,6 +19,39 @@ body {
     margin-bottom: 20px;
 }
 
+/* 给表格整体设置边框和间距 */
+table {
+    width: 100%; /* 表格宽度 */
+    border-collapse: collapse; /* 合并单元格间的边框 */
+    margin: 20px 0; /* 上下间距 */
+    font-size: 16px; /* 字体大小 */
+    text-align: left; /* 文本左对齐 */
+}
+
+/* 表头样式 */
+table thead th {
+    background-color: #f4f4f4; /* 表头背景色 */
+    color: #333; /* 表头字体颜色 */
+    padding: 10px; /* 内边距 */
+    border: 1px solid #ddd; /* 边框 */
+}
+
+/* 表体样式 */
+table tbody td {
+    padding: 8px; /* 单元格内边距 */
+    border: 1px solid #ddd; /* 单元格边框 */
+}
+
+/* 偶数行背景色 */
+table tbody tr:nth-child(even) {
+    background-color: #f9f9f9; /* 偶数行背景色 */
+}
+
+/* 悬停高亮 */
+table tbody tr:hover {
+    background-color: #f1f1f1; /* 鼠标悬停时的背景色 */
+}
+
 button {
     margin-top: 10px;
     padding: 10px;

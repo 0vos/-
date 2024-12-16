@@ -6,6 +6,7 @@
 #include <string>
 #include <netinet/in.h>
 #include <unistd.h>
+#include <regex>
 
 #define PORT 8080
 using namespace std;
@@ -25,9 +26,10 @@ string get_mime_type(const string& file_path) {
 void handle_file_upload(int client_socket, const string& input_string) {
     // 响应内容
     cout << "origin content:\n" << input_string << endl;
+    string af_string = regex_replace(input_string, regex("\\\\n"), "\n");
     string compressed[2];
-    encode(input_string, compressed);
-    string response_body = "{\"encoded\":\"" + compressed[0] + compressed[1] + "\"}";
+    encode(af_string, compressed);
+    string response_body = convertToJSON(compressed[0], compressed[1]);
 
     // HTTP 响应头，添加 CORS 支持
     string http_response =
@@ -36,7 +38,7 @@ void handle_file_upload(int client_socket, const string& input_string) {
         "Access-Control-Allow-Origin: *\r\n"
         "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
         "Access-Control-Allow-Headers: Content-Type\r\n"
-        "Content-Length: " + std::to_string(response_body.length()) + "\r\n\r\n" +
+        "Content-Length: " + to_string(response_body.length()) + "\r\n\r\n" +
         response_body;
 
     send(client_socket, http_response.c_str(), http_response.length(), 0);
@@ -46,11 +48,9 @@ void handle_file_upload(int client_socket, const string& input_string) {
 void handle_string_input(int client_socket, const string& input_string) {
     // 编码字符串
     string compressed[2];
-    encode(input_string, compressed);
-
-    // 构造 JSON 响应体
-    string response_body = "{\"encoded\":\"" + compressed[0] + compressed[1] + "\"}";
-
+    string af_string = regex_replace(input_string, regex("\\\\n"), "\n");
+    encode(af_string, compressed);
+    string response_body = convertToJSON(compressed[0], compressed[1]);
     // 构造 HTTP 响应
     string http_response =
         "HTTP/1.1 200 OK\r\n"                              // 返回成功状态码
@@ -58,7 +58,7 @@ void handle_string_input(int client_socket, const string& input_string) {
         "Access-Control-Allow-Origin: *\r\n"              // 允许所有源
         "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
         "Access-Control-Allow-Headers: Content-Type\r\n"  // 允许 Content-Type 请求头
-        "Content-Length: " + std::to_string(response_body.length()) + "\r\n\r\n" +
+        "Content-Length: " + to_string(response_body.length()) + "\r\n\r\n" +
         response_body;
 
     // 发送响应
@@ -72,9 +72,9 @@ void handle_string_input(int client_socket, const string& input_string) {
 void handle_random_string(int client_socket) {
     string random_str = get_text(10, 48, 78);
     string compressed[2];
-    encode(random_str, compressed);
-     // 构造 JSON 响应体
-    string response_body = "{\"random_string\":\"" + random_str + compressed[0] + compressed[1] + "\"}";
+    string af_string = regex_replace(random_str, regex("\\\\n"), "\n");
+    encode(af_string, compressed);
+    string response_body = convertToJSON(compressed[0], compressed[1]);
 
     // 构造 HTTP 响应
     string http_response =

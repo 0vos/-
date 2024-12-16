@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <random>
+#include <sstream>
 using namespace std;
 
 // 获取图片文件信息
@@ -89,9 +90,60 @@ void recover_image(const string& file_path, string content){
     // TODO: 将解码后的图像的二进制码恢复到图像
 }
 
+// 字符串到json
+string convertToJSON(const string& encodingTableString, const string& encodedContent) {
+    // 初始化 JSON 字符串
+    string jsonString = "{\n";
+    
+    // 解析编码表字符串
+    jsonString += "  \"encoding_table\": {\n";
+    istringstream stream(encodingTableString);
+    string pair;
+    
+    // 解析每个“字符_编码”对
+    bool first = true;
+    while (getline(stream, pair, ' ')) {
+        size_t delimiterPos = pair.find('_');
+        if (delimiterPos != string::npos) {
+            string character = pair.substr(0, delimiterPos);  // 字符
+            if(character=="\n"){
+                character = "\\n";
+            }
+            if(character=="\r"){
+                character = "\\r";
+            }
+            if(character=="\\"){
+                character = "\\\\";
+            }
+            if(character=="\t"){
+                character = "\\t";
+            }
+            string code = pair.substr(delimiterPos + 1);      // 编码
+            
+            if (!first) {
+                jsonString += ",\n"; // 不是第一个元素，加上逗号
+            }
+            jsonString += "    \"" + character + "\": \"" + code + "\"";
+            first = false; // 第一个元素后不再加逗号
+        }
+    }
+    
+    jsonString += "\n  },\n";
+    jsonString += "  \"encoded_content\": \"" + encodedContent + "\"\n";
+    jsonString += "}";
+    cout << "inner" <<jsonString << endl;
+    return jsonString;
+}
 // test
 // int main(){
-//     string file_path = "data/test_origin.txt";
-//     save_origin(file_path, "Me");
+//     string encodingTableString = "A_0 B_10 C_111";
+//     string encodedContent = "010111";
+
+//     // 转换为 JSON 格式
+//     string jsonOutput = convertToJSON(encodingTableString, encodedContent);
+
+//     // 输出 JSON 字符串
+//     cout << "JSON Output:\n" << jsonOutput << endl;
+
 //     return 0;
 // }
