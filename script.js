@@ -45,7 +45,7 @@ function uploadFile() {
             .then(data => {
                 // 显示编码内容
                 const encodedContent = data.encoded_content;
-                document.getElementById('encoded-output').innerHTML = `<h3>编码内容: ${encodedContent}</h3>`;
+                document.getElementById('file-content').innerHTML = `<h3>编码内容: ${encodedContent}</h3>`;
                     
                 // 生成编码对照表
                 const encodingTable = data.encoding_table;
@@ -177,7 +177,7 @@ function generateRandomString() {
     .then(data => {
         // 显示编码内容
         const encodedContent = data.encoded_content;
-        document.getElementById('encoded-output').innerHTML = `<h3>编码内容: ${encodedContent}</h3>`;
+        document.getElementById('random-output').innerHTML = `<h3>编码内容: ${encodedContent}</h3>`;
 
         // 生成编码对照表
         const encodingTable = data.encoding_table;
