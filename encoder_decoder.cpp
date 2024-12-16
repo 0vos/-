@@ -167,16 +167,42 @@ void encode(const string& content, string* encode_pair){
 }
 
 // pair[0]为哈夫曼表字符串，pair[1]为编码内容
-string decode(string* pair){
-    string origin_content;
-    // TODO: 把哈夫曼表字符串转成哈夫曼表（表的一个块为TableBlock），并查表输出解码的字符串
+string decode(string pair[2]){
+    //总体思路是截取哈夫曼表字符串，按照规律截取，即下划线前是源文本字符，后是哈夫曼编码，且哈夫曼编码是以字符型的0与1组成
+    //后面是空格然后是下一组，使用tableblock类型的a数组来存储截取的哈夫曼表，将来用来比对。使用judge来挨个读取编码内容并立
+    //即进行匹配，得益于哈夫曼表独特的优势不会出现模糊的情况，然后遍历a数组直到匹配，将匹配的字符存到origin_content中
+    string origin_content= "";//初始化为空
+    string judge= "";
+    TableBlock a[100];
+    int j= 0;
+    for(int i= 0; i<pair[0].size(); i++){
+        int n= 2;
+        a[j].key= pair[0][i];//录入字符
+        while(pair[0][i+n]=='1'||pair[0][i+n]=='0'){
+            a[j].value+= pair[0][i+n];//录入编码
+            n++;
+        }
+        i+= n;
+        j++;
+    }
+    for(int i=0; i<pair[1].size(); i++){
+        judge+= pair[1][i];
+        for(int k=0; k<j; k++){//遍历哈夫曼编码
+            if(judge== a[k].value){
+                origin_content+= a[k].key;//找到匹配并将其存入origin_content
+                judge= "";//还原judge为空
+                break;
+            }
+        }
+    }
     return origin_content;
 }
 
 // test
-// int main(){
-//     string list[2];
-//     encode("  Hello\nworld!", list);
-//     cout << list[0] << "###" << list[1] << endl;
-//     return 0;
-// }
+int main(){
+    string list[2];
+    encode("  Hello\nworld!", list);
+    cout << list[0] <<endl << list[1] << endl;
+    cout<<decode(list)<<endl;
+    return 0;
+}
