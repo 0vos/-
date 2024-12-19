@@ -73,8 +73,8 @@ void save_huff(const string& file_path, string* pair){
     // TODO: 把哈夫曼表和编码内容写道压缩文件中, pair是用encode生成出表字符串、编码字符串对
 }
 
-// 保存源码
-void save_origin(const string& file_path, string content){
+// 保存内容到文件
+void save_content(const string& file_path, string content){
     ofstream outfile(file_path);
     if(outfile.is_open()){
         outfile << content;
@@ -91,7 +91,7 @@ void recover_image(const string& file_path, string content){
 }
 
 // 字符串到json
-string convertToJSON(const string& encodingTableString, const string& encodedContent) {
+string convertToJSON(const string& origin_content, const string& encodingTableString, const string& encodedContent) {
     // 初始化 JSON 字符串
     string jsonString = "{\n";
     
@@ -129,10 +129,33 @@ string convertToJSON(const string& encodingTableString, const string& encodedCon
     }
     
     jsonString += "\n  },\n";
-    jsonString += "  \"encoded_content\": \"" + encodedContent + "\"\n";
+    jsonString += "  \"encoded_content\": \"" + encodedContent + "\",\n";
+    jsonString += "  \"origin_content\": \"" + origin_content + "\"\n";
     jsonString += "}";
-    cout << "inner" <<jsonString << endl;
+    cout << "inner\n" <<jsonString << endl;
     return jsonString;
+}
+
+bool fileExists(const string& file_name) {
+    ifstream file(file_name);
+    return file.good(); // 检查文件是否打开成功
+}
+// 保存json字符串到json文件
+void save_json(const string& json_string, const string& file_name){
+    string json_file_path = file_name + ".json";
+    if(fileExists(json_file_path)){
+        save_content(json_file_path, json_string);
+    }
+    else{
+        fstream newfile(json_file_path, ios::out);
+        if(newfile){
+            save_content(json_file_path, json_string);
+        }
+        else{
+            printf("创建文件失败！\n");
+            exit(1);
+        }
+    }
 }
 // test
 // int main(){

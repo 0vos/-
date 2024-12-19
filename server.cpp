@@ -23,13 +23,22 @@ string get_mime_type(const string& file_path) {
     return "application/octet-stream"; // 默认 MIME 类型
 }
 
-void handle_file_upload(int client_socket, const string& input_string) {
+void handle_file_upload(int client_socket, const string& input_string, const string& file_name) {
     // 响应内容
     cout << "origin content:\n" << input_string << endl;
     string af_string = regex_replace(input_string, regex("\\\\n"), "\n");
     string compressed[2];
     encode(af_string, compressed);
-    string response_body = convertToJSON(compressed[0], compressed[1]);
+    string response_body = convertToJSON(af_string, compressed[0], compressed[1]);
+
+    // 获取文件名
+    string ffile_name;
+    size_t dot_pos = file_name.find(".");
+    if(dot_pos!=string::npos){
+        ffile_name = file_name.substr(0, dot_pos);
+    }
+    // 保存编码到json文件中
+    save_json(response_body, ffile_name);
 
     // HTTP 响应头，添加 CORS 支持
     string http_response =
@@ -50,7 +59,9 @@ void handle_string_input(int client_socket, const string& input_string) {
     string compressed[2];
     string af_string = regex_replace(input_string, regex("\\\\n"), "\n");
     encode(af_string, compressed);
-    string response_body = convertToJSON(compressed[0], compressed[1]);
+    string response_body = convertToJSON(af_string, compressed[0], compressed[1]);
+    // 保存编码到json文件中
+    save_json(response_body, "human_input");
     // 构造 HTTP 响应
     string http_response =
         "HTTP/1.1 200 OK\r\n"                              // 返回成功状态码
@@ -74,8 +85,9 @@ void handle_random_string(int client_socket) {
     string compressed[2];
     string af_string = regex_replace(random_str, regex("\\\\n"), "\n");
     encode(af_string, compressed);
-    string response_body = convertToJSON(compressed[0], compressed[1]);
-
+    string response_body = convertToJSON(af_string, compressed[0], compressed[1]);
+    // 保存编码到json文件中
+    save_json(response_body, "random_input");
     // 构造 HTTP 响应
     string http_response =
         "HTTP/1.1 200 OK\r\n"                              // 返回成功状态码
@@ -160,13 +172,20 @@ void serve_request(int client_socket, const string& request) {
         printf("get body\n");
         cout << "body:\n" << body << endl;
         string input_string;
+        string file_name;
         size_t content_pos = body.find("\"fileContent\":\"");
+        size_t file_name_pos = body.find("\"fileName\":\"");
+        if(file_name_pos!=string::npos){
+            file_name_pos += 12;
+            size_t end_pos = body.find("\"", file_name_pos);
+            file_name = body.substr(file_name_pos, end_pos - file_name_pos);
+        }
         if(content_pos!=string::npos){
             content_pos += 15;
             size_t end_pos = body.find("\"", content_pos);
             input_string = body.substr(content_pos, end_pos - content_pos);
         }
-        handle_file_upload(client_socket, input_string);
+        handle_file_upload(client_socket, input_string, file_name);
     }
     else if(request.find("POST /string_input") != string::npos){
         // cout << "request:\n" << request << endl;
@@ -223,17 +242,14 @@ int main() {
         perror("Bind failed");
         exit(EXIT_FAILURE);
     }
-
     if (listen(server_fd, 3) < 0) {
         perror("Listen failed");
         exit(EXIT_FAILURE);
     }
-
     while ((new_socket = accept(server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen)) >= 0) {
         int valread = read(new_socket, buffer, 1024);
         string request(buffer, valread);
         serve_request(new_socket, request);
     }
-
     return 0;
 }

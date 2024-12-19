@@ -8,12 +8,14 @@
 </head>
 <body>
     <div class="sidebar">
+        <h3>编码</h3>
         <button onclick="showUploadForm()">上传文件</button>
+        <br>
         <button onclick="showStringInput()">手动输入字符串</button>
+        <br>
         <button onclick="showRandomString()">生成随机字符串</button>
-        <button onclick="searchString()">查找字符串</button>
-        <button onclick="addString()">增加字符串</button>
-        <button onclick="delString()">删除字符串</button>
+        <h3>解码</h3>
+        <button onclick="showDecode()">文件解码</button>
     </div>
 
     <div class="main-content">
@@ -25,15 +27,24 @@
         </div>
 
         <div id="string-input" class="form-section" style="display: none;">
-            <h2>输入字符串</h2>
-            <input type="text" id="input-string" />
+            <h2>输入文本</h2>
+            <textarea type="text" id="input-string" rows="10" cols="50"></textarea>
             <button onclick="generateHandWrittenString()">压缩</button>
+            <button onclick="searchString()">查找字符串</button>
             <div id="encoded-output"></div>
         </div>
 
         <div id="random-string" class="form-section" style="display: none;">
             <button onclick="generateRandomString()">生成随机字符串、压缩</button>
             <div id="random-output"></div>
+        </div>
+
+        <div id="upload-decode" class="form-section" style="display: none;">
+            <img src="data/test_image.png" alt="Test image" style="max-width: 50%; height: auto;"/>
+            <h2>上传文件</h2>
+            <input type="file" id="file-encode" />
+            <button onclick="generateOriginContent()">解码</button>
+            <div id="file-decode"></div>
         </div>
     </div>
 
