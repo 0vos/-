@@ -91,7 +91,7 @@ void recover_image(const string& file_path, string content){
 }
 
 // 字符串到json
-string convertToJSON(const string& origin_content, const string& encodingTableString, const string& encodedContent) {
+string convertToJSON(const string& origin_content, const string& encodingTableString, const string& encodedContent, bool compress_mode=false) {
     // 初始化 JSON 字符串
     string jsonString = "{\n";
     
@@ -129,8 +129,30 @@ string convertToJSON(const string& origin_content, const string& encodingTableSt
     }
     
     jsonString += "\n  },\n";
+    if(compress_mode){
+        jsonString += "  \"encoded_content\": \"" + encodedContent + "\"\n";
+        jsonString += "}";
+        return jsonString;
+    }
     jsonString += "  \"encoded_content\": \"" + encodedContent + "\",\n";
-    jsonString += "  \"origin_content\": \"" + origin_content + "\"\n";
+    string refined_content = "";
+    for(size_t i=0;i<origin_content.length();++i){
+        string character = string(1, origin_content[i]);
+        if(character=="\n"){
+            character = "\\n";
+        }
+        if(character=="\r"){
+            character = "\\r";
+        }
+        if(character=="\\"){
+            character = "\\\\";
+        }
+        if(character=="\t"){
+            character = "\\t";
+        }
+        refined_content += character;
+    }
+    jsonString += "  \"origin_content\": \"" + refined_content + "\"\n";
     jsonString += "}";
     cout << "inner\n" <<jsonString << endl;
     return jsonString;
@@ -142,20 +164,58 @@ bool fileExists(const string& file_name) {
 }
 // 保存json字符串到json文件
 void save_json(const string& json_string, const string& file_name){
-    string json_file_path = file_name + ".json";
-    if(fileExists(json_file_path)){
-        save_content(json_file_path, json_string);
+    string txt_file_path = file_name + ".json";
+    if(fileExists(txt_file_path)){
+        save_content(txt_file_path, json_string);
     }
     else{
-        fstream newfile(json_file_path, ios::out);
+        fstream newfile(txt_file_path, ios::out);
         if(newfile){
-            save_content(json_file_path, json_string);
+            save_content(txt_file_path, json_string);
         }
         else{
             printf("创建文件失败！\n");
             exit(1);
         }
     }
+}
+//保存字符到txt源码文件
+void save_txt(const string& origin_string, const string& file_name){
+    string txt_file_path = file_name + ".txt";
+    if(fileExists(txt_file_path)){
+        save_content(txt_file_path, origin_string);
+    }
+    else{
+        fstream newfile(txt_file_path, ios::out);
+        if(newfile){
+            save_content(txt_file_path, origin_string);
+        }
+        else{
+            printf("创建文件失败！\n");
+            exit(1);
+        }
+    }
+}
+
+string refined_string2json(const string& origin){
+    string refined_content = "";
+    for(size_t i=0;i<origin.length();++i){
+        string character = string(1, origin[i]);
+        if(character=="\n"){
+            character = "\\n";
+        }
+        if(character=="\r"){
+            character = "\\r";
+        }
+        if(character=="\\"){
+            character = "\\\\";
+        }
+        if(character=="\t"){
+            character = "\\t";
+        }
+        refined_content += character;
+    }
+    return refined_content;
 }
 // test
 // int main(){
