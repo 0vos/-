@@ -64,3 +64,26 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+
+textarea {
+    width: 100%;              /* 宽度设置为100%，自适应容器 */
+    max-width: 600px;         /* 最大宽度为600px */
+    height: auto;             /* 高度根据内容自适应 */
+    min-height: 150px;        /* 最小高度为150px */
+    padding: 10px;            /* 内边距为10px */
+    font-size: 14px;          /* 字体大小为14px */
+    line-height: 1.5;         /* 行间距为1.5 */
+    border: 1px solid #d5d5d5;  /* 边框为1px灰色实线 */
+    border-radius: 5px;      /* 圆角边框 */
+    background-color: #fefefe; /* 背景颜色 */
+    color: #333;             /* 字体颜色 */
+    resize: both;            /* 允许用户调整大小（水平和垂直方向） */
+    box-sizing: border-box;  /* 包括内边距和边框在内的宽高计算 */
+    font-family: Arial, sans-serif; /* 字体样式 */
+  }
+  
+  textarea:focus {
+    border-color: #007BFF;  /* 聚焦时边框颜色变为蓝色 */
+    outline: none;           /* 取消默认的聚焦时外轮廓 */
+    background-color: #fefefe; /* 聚焦时背景颜色 */
+  }
