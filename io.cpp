@@ -164,7 +164,7 @@ bool fileExists(const string& file_name) {
 }
 // 保存json字符串到json文件
 void save_json(const string& json_string, const string& file_name){
-    string txt_file_path = file_name + ".json";
+    string txt_file_path = "data/" + file_name + ".json";
     if(fileExists(txt_file_path)){
         save_content(txt_file_path, json_string);
     }
@@ -181,7 +181,7 @@ void save_json(const string& json_string, const string& file_name){
 }
 //保存字符到txt源码文件
 void save_txt(const string& origin_string, const string& file_name){
-    string txt_file_path = file_name + ".txt";
+    string txt_file_path = "data/" + file_name + ".txt";
     if(fileExists(txt_file_path)){
         save_content(txt_file_path, origin_string);
     }
