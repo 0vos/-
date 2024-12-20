@@ -166,30 +166,51 @@ void encode(const string& content, string* encode_pair){
     encode_pair[1] = codes;
 }
 
-// pair[0]为哈夫曼表字符串，pair[1]为编码内容
-string decode(string pair[2]){
-    //总体思路是截取哈夫曼表字符串，按照规律截取，即下划线前是源文本字符，后是哈夫曼编码，且哈夫曼编码是以字符型的0与1组成
-    //后面是空格然后是下一组，使用tableblock类型的a数组来存储截取的哈夫曼表，将来用来比对。使用judge来挨个读取编码内容并立
-    //即进行匹配，得益于哈夫曼表独特的优势不会出现模糊的情况，然后遍历a数组直到匹配，将匹配的字符存到origin_content中
-    string origin_content= "";//初始化为空
-    string judge= "";
-    TableBlock a[100];
-    int j= 0;
-    for(int i= 0; i<pair[0].size(); i++){
-        int n= 2;
-        a[j].key= pair[0][i];//录入字符
-        while(pair[0][i+n]=='1'||pair[0][i+n]=='0'){
-            a[j].value+= pair[0][i+n];//录入编码
-            n++;
+// 解码，content为json字符串
+string decode(string name){
+    string content= "";
+    int i;
+    while(name[i]!= '\0'){
+        content+= name[i];
+        i++;
+    }
+    int number_of_words= 0;
+    for(int i=0; content[i]!= '\0';i++){
+        if(content[i]== ':'){
+            number_of_words++;
+            if(content[i-1] == '\"' && content[i-2] == '\"'){
+                content.insert(i-1, 1, ' ');
+            }
         }
-        i+= n;
+    }
+    TableBlock *huff= new TableBlock[number_of_words];
+    int j= 0;
+    //cout<<content[24]<<content[25]<<content[31]<<endl;
+    for(i=19; i<content.size(); i++){
+        huff[j].key= content[i];
+        i= i+4;
+        while(content[i]=='0'||content[i]=='1'){
+            huff[j].value+= content[i];
+            i++;
+        }
+        //cout<<i<<" "<<content[i+3]<<endl;
+        cout<<huff[j].key<<" "<<huff[j].value<<endl;
+        if(content[i+1]!= ','){
+            break;
+        }
+        i+= 2;
         j++;
     }
-    for(int i=0; i<pair[1].size(); i++){
-        judge+= pair[1][i];
-        for(int k=0; k<j; k++){//遍历哈夫曼编码
-            if(judge== a[k].value){
-                origin_content+= a[k].key;//找到匹配并将其存入origin_content
+    i+= 22;
+    string huff_code= content.substr(i, content.find("\"", i) - i);
+    cout << "huff code\n" <<huff_code << endl;
+    string judge= "";
+    string origin_content= "";
+    for(size_t i=0; i<huff_code.length(); ++i){
+        judge+= huff_code[i];
+        for(size_t k=0; k<j; ++k){//遍历哈夫曼编码
+            if(judge== huff[k].value){
+                origin_content+= huff[k].key;//找到匹配并将其存入origin_content
                 judge= "";//还原judge为空
                 break;
             }
@@ -197,7 +218,16 @@ string decode(string pair[2]){
     }
     return origin_content;
 }
-
+string handle_special_char(string original){
+    string c= "\n";
+    //cout<<c;
+    int position= original.find("\\n");
+    if (position!= std::string::npos) {
+        original.replace(position, c.length()+1, "\n");  
+    } 
+    //cout<<original[position+1]<<original[position+2];
+    return original;
+}
 // test
 // int main(){
 //     string list[2];
