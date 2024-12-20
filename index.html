@@ -29,7 +29,7 @@
         <div id="string-input" class="form-section" style="display: none;">
             <h2>输入文本</h2>
             <textarea type="text" id="input-string" rows="10" cols="50"></textarea>
-            <button onclick="generateHandWrittenString()">压缩</button>
+            <button onclick="generateHandWrittenString('input-string', 'encoded-output', 'human_input')">压缩</button>
             <button onclick="searchString()">查找字符串</button>
             <div id="encoded-output"></div>
         </div>
@@ -40,12 +40,16 @@
         </div>
 
         <div id="upload-decode" class="form-section" style="display: none;">
-            <img src="data/test_image.png" alt="Test image" style="max-width: 50%; height: auto;"/>
+            <!-- <img src="data/test_image.png" alt="Test image" style="max-width: 50%; height: auto;"/> -->
             <h2>上传文件</h2>
             <input type="file" id="file-encode" />
             <button onclick="generateOriginContent()">解码</button>
+            <div id="image-result"></div>
             <div id="file-decode"></div>
         </div>
+
+        <div id="search-string"></div>
+        <div id="show-search"></div>
     </div>
 
     <script src="script.js"></script>
