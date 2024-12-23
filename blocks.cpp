@@ -12,8 +12,8 @@ typedef struct Node {
 
 // 哈夫曼表模块
 typedef struct TableBlock{
-    char key; // 字符
+    string key; // 字符
     string value; //字符对应的哈夫曼编码值
     // 初始化
-    TableBlock(): value(""){}
+    TableBlock(): key(""),value(""){}
 }TableBlock;
