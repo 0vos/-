@@ -75,6 +75,8 @@ void handle_decode_string(int client_socket, const string& input_string, const s
 void find_string(int client_socket, const string& input_string, const string& find_string) {
     string af_string = regex_replace(input_string, regex("\\\\n"), "\n");
     string ff_string = regex_replace(find_string, regex("\\\\n"), "\n");
+    af_string = handle_special_char(af_string);
+    ff_string = handle_special_char(ff_string);
     string find_out = get_total_part(af_string, ff_string);
     find_out = refined_string2json(find_out);
     string response_body = "{\n  \"find_content\": \"" + find_out + "\"\n}";
@@ -100,6 +102,7 @@ void handle_file_upload(int client_socket, const string& input_string, const str
     // 响应内容
     cout << "origin content:\n" << input_string.substr(0, 100) << endl;
     string af_string = regex_replace(input_string, regex("\\\\n"), "\n");
+    af_string = handle_special_char(af_string);
     string compressed[2];
     encode(af_string, compressed);
     string response_body = convertToJSON(af_string, compressed[0], compressed[1]);
@@ -130,6 +133,9 @@ void handle_file_upload(int client_socket, const string& input_string, const str
 
 void handle_string_input(int client_socket, const string& input_string, const string& file_name) {
     // 获取文件名
+    // string af_string = regex_replace(input_string, regex("\\\\n"), "\n");
+    string af_string = handle_special_char(input_string);
+    cout << "af_string: "<<af_string << endl;
     string ffile_name;
     size_t dot_pos = file_name.find(".");
     if(dot_pos!=string::npos){
@@ -138,12 +144,13 @@ void handle_string_input(int client_socket, const string& input_string, const st
     else{
         ffile_name = file_name;
     }
-    save_txt(input_string, ffile_name);
+    save_txt(af_string, ffile_name);
     // 编码字符串
     string compressed[2];
-    string af_string = regex_replace(input_string, regex("\\\\n"), "\n");
     encode(af_string, compressed);
+    // printf("\nencode succeed!\n");
     string response_body = convertToJSON(af_string, compressed[0], compressed[1]);
+    // cout << "\nresponse\n" << response_body << endl;
     // 保存编码到json文件中
     string compressed_body = convertToJSON(af_string, compressed[0], compressed[1], true);
     save_json(compressed_body, ffile_name);
@@ -156,7 +163,6 @@ void handle_string_input(int client_socket, const string& input_string, const st
         "Access-Control-Allow-Headers: Content-Type\r\n"  // 允许 Content-Type 请求头
         "Content-Length: " + to_string(response_body.length()) + "\r\n\r\n" +
         response_body;
-
     // 发送响应
     send(client_socket, http_response.c_str(), http_response.length(), 0);
 
@@ -168,6 +174,7 @@ void handle_string_input(int client_socket, const string& input_string, const st
 void handle_random_string(int client_socket) {
     string random_str = get_text(10, 48, 78);
     // 保存源码到txt
+    random_str = handle_special_char(random_str);
     save_txt(random_str, "random_input");
     string compressed[2];
     string af_string = regex_replace(random_str, regex("\\\\n"), "\n");
@@ -265,28 +272,27 @@ void serve_request(int client_socket, const string& request) {
         size_t file_name_pos = body.find("\"fileName\":\"");
         if(file_name_pos!=string::npos){
             file_name_pos += 12;
-            size_t end_pos = body.find("\"", file_name_pos);
+            size_t end_pos = body.find(",", file_name_pos) - 1;
             file_name = body.substr(file_name_pos, end_pos - file_name_pos);
         }
         if(content_pos!=string::npos){
             content_pos += 15;
-            size_t end_pos = body.find("\"", content_pos);
+            size_t end_pos = body.find("}", content_pos) - 1;
             input_string = body.substr(content_pos, end_pos - content_pos);
         }
         handle_file_upload(client_socket, input_string, file_name);
     }
     else if(request.find("POST /string_input") != string::npos){
-        // cout << "request:\n" << request << endl;
+        cout << "request:\n" << request << endl;
         // 获取请求体
         size_t pos = request.find("\r\n\r\n");
         string body = request.substr(pos + 4);
-
         // 解析 JSON 数据
         string input_string;
         size_t string_pos = body.find("\"string\":\"");
         if (string_pos != string::npos) {
             string_pos += 10; // 跳过 "\"string\":\""
-            size_t end_pos = body.find("\"", string_pos);
+            size_t end_pos = body.find("\"fileName\":\"", string_pos) - 2;
             input_string = body.substr(string_pos, end_pos - string_pos);
         } // 处理完输入的字符串
         string file_name;
@@ -308,7 +314,7 @@ void serve_request(int client_socket, const string& request) {
         size_t string_pos = body.find("\"Search\":\"");
         if (string_pos != string::npos) {
             string_pos += 10; // 跳过 "\"Search\":\""
-            size_t end_pos = body.find("\"", string_pos);
+            size_t end_pos = body.find("}", string_pos) - 1;
             find_s = body.substr(string_pos, end_pos - string_pos);
         } // 处理完了查找的字符串
         cout << find_s << endl;
@@ -316,7 +322,7 @@ void serve_request(int client_socket, const string& request) {
         size_t origin_pos = body.find("\"OriginString\":\"");
         if (origin_pos != string::npos) {
             origin_pos += 16; // 跳过 "\"OriginString\":\""
-            size_t end_pos = body.find("\"", origin_pos);
+            size_t end_pos = body.find("\"Search\":\"", origin_pos) - 2;
             origin_string = body.substr(origin_pos, end_pos - origin_pos);
         } // 处理完了原始的字符串
         cout << find_s << endl;
