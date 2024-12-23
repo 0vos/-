@@ -118,6 +118,9 @@ string convertToJSON(const string& origin_content, const string& encodingTableSt
             if(character=="\t"){
                 character = "\\t";
             }
+            if(character=="\""){
+                character = "\\\"";
+            }
             string code = pair.substr(delimiterPos + 1);      // 编码
             
             if (!first) {
@@ -149,6 +152,9 @@ string convertToJSON(const string& origin_content, const string& encodingTableSt
         }
         if(character=="\t"){
             character = "\\t";
+        }
+        if(character=="\""){
+            character = "\\\"";
         }
         refined_content += character;
     }
@@ -217,6 +223,26 @@ string refined_string2json(const string& origin){
     }
     return refined_content;
 }
+// 更新字符串中的双引号
+string refined_json2string(const string& origin){
+    string refined_content = "";
+    for(size_t i=0;i<origin.length();++i){
+        if(origin[i]=='\\'){
+            if(i+1<origin.length()){
+                if(origin[i+1]=='"'){
+                    refined_content += "\"";
+                    continue;
+                }
+            }
+        }
+        if(origin[i]=='"'){
+            continue;
+        }
+        refined_content += origin[i];
+    }
+    return refined_content;
+}
+
 // test
 // int main(){
 //     string encodingTableString = "A_0 B_10 C_111";
