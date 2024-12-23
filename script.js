@@ -282,6 +282,7 @@ function uploadFile() {
 }
 
 function generateHandWrittenString(input_id, output_id, file_name) {
+    console.log(document.getElementById(input_id).value);
     const input_string = document.getElementById(input_id).value;
     const data = {
         string: input_string,
@@ -290,7 +291,8 @@ function generateHandWrittenString(input_id, output_id, file_name) {
     fetch('http://localhost:8080/string_input', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+            'Accept-Language': 'en-US,zh-CN;q=0.8',
+            'Content-Type': 'application/json; charset=UTF-8',
         },
         body: JSON.stringify(data),
     })
@@ -298,10 +300,12 @@ function generateHandWrittenString(input_id, output_id, file_name) {
     .then(data => {
         // 显示编码内容
         const encodedContent = data.encoded_content;
+        console.log(encodedContent);
         document.getElementById(output_id).innerHTML = `<h3>编码内容: ${encodedContent}</h3>`;
 
         // 生成编码对照表
         const encodingTable = data.encoding_table;
+        console.log(encodingTable);
         const table = document.createElement('table');
         table.border = "1";
 
