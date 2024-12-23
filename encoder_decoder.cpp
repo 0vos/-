@@ -7,34 +7,96 @@ using namespace std;
 class HuffTree{
 protected: // 设置为保护，方便继承
     Node* tree_table; // 哈夫曼树静态链表
-    string text; // 从字符串中提取的字符集合，比如aabbbc的字符集合就是abc
+    string* text; // 从字符串中提取的字符集合，比如aabbbc的字符集合就是abc
+    int length;
     void get_min2(int* min2); // 获取权重最小的两个节点
 public:
     HuffTree(const string& content); // 哈夫曼树的构造函数，输入字符串，构建哈夫曼树
     void build_huff_tree(); // 构建哈夫曼树
     void print_huff(); // 打印哈夫曼树
 };
-
+void print_string_list(string* list, int length){
+    printf("text list:\n");
+    for(size_t i=0;i<length;++i){
+        cout << i << '\t' << list[i] << endl;
+    }
+}
 // 得到字符集合
-string get_chars_set(const string& content){
-    string tmp = ""; // 初始化字符集合为空集
+int get_chars_length(const string& content){
+    int length = 0;
+    string tmp = "";
     for(size_t i=0;i<content.length();++i){
-        if(tmp.find(string(1, content[i]))==string::npos){
-            tmp += string(1, content[i]); // 如果没有在字符集合中，就加上这个字符
+        string character;
+        bool _ = false;
+        if(content[i]=='_'&&_==false){
+            length++;
+            _ = true;
+        }
+        if(content[i]<0||content[i]>127){
+            character = content.substr(i, 3);
+            // cout << character << endl;
+            if(tmp.find(character)==string::npos){
+                length++;
+                tmp += character + "_";
+            }
+            i += 2;
+        }else{
+            character = string(1, content[i]);
+            if(tmp.find(character)==string::npos){
+                length++;
+                tmp += character + "_";
+            }
         }
     }
     // cout << tmp << endl;
-    return tmp;
+    return length;
+}
+
+int find_index(string* text, string target, int length){
+    for(size_t i=0;i<length;++i){
+        if(target==text[i]){
+            return i;
+        }
+    }
+    // cout << "目标字符" << target << "不存在\n" << endl;
+    return -1;
 }
 
 // 哈夫曼树构造函数
 HuffTree::HuffTree(const string &content){
-    text = get_chars_set(content); // 获取字符集合
-    tree_table = new Node[2 * text.length() - 1]; // 初始化哈夫曼树的静态二叉树表，前n个位置是每个对应字符，后n-1是n-1次操作中每次操作后创建新节点
+    length = get_chars_length(content); // 获取字符集合
+    // cout << length << endl;
+    text = new string[length];
+    int index = 0;
     for(size_t i=0;i<content.length();++i){
-        char tmp = content[i];
-        tree_table[text.find(tmp)].weight++; // 根据字符在字符集合中的位置找到静态表对应的位置，将权重（该字符出现的次数+1）
-        // cout << tmp << '\t' << tree_table[text.find(tmp)].weight << endl;
+        string character;
+        if(content[i]<0||content[i]>127){
+            character = content.substr(i, 3);
+            if(find_index(text, character, length)==-1){
+                text[index] = character;
+                index++;
+            }
+            i += 2;
+        }else{
+            character = string(1, content[i]);
+            if(find_index(text, character, length)==-1){
+                text[index] = character;
+                index++;
+            }
+        }
+    }
+    // print_string_list(text, length);
+    tree_table = new Node[2 * length - 1]; // 初始化哈夫曼树的静态二叉树表，前n个位置是每个对应字符，后n-1是n-1次操作中每次操作后创建新节点
+    for(size_t i=0;i<content.length();++i){
+        string tmp;
+        if(content[i]<0||content[i]>127){
+            tmp = content.substr(i, 3);
+            i += 2;
+        }else{
+            tmp = string(1, content[i]);
+        }
+        tree_table[find_index(text, tmp, length)].weight++; // 根据字符在字符集合中的位置找到静态表对应的位置，将权重（该字符出现的次数+1）
+        // cout << tmp << '\t' << tree_table[find_index(text, tmp, length)].weight << endl;
     }
 }
 
@@ -75,7 +137,7 @@ void HuffTree::get_min2(int* min_list){
 // 构建哈夫曼二叉树
 void HuffTree::build_huff_tree(){
     // print_huff();
-    for(size_t i=text.length();i<2*text.length()-1;++i){
+    for(size_t i=length;i<2*length-1;++i){
         int tmp[2];
         get_min2(tmp);
         tree_table[i].weight = tree_table[tmp[0]].weight + tree_table[tmp[1]].weight; // 新节点的权重是最小的两个权重之和
@@ -91,7 +153,7 @@ void HuffTree::build_huff_tree(){
 
 // 打印哈夫曼树表
 void HuffTree::print_huff(){
-    for(size_t i=0;i<2*text.length()-1;++i){
+    for(size_t i=0;i<2*length-1;++i){
         printf("%lu\t%d\t%d\t%d\t%d\n", i, tree_table[i].weight, tree_table[i].parent, tree_table[i].left, tree_table[i].right);
     }
 }
@@ -104,17 +166,18 @@ private:
 public:
     TableBlock* huff_table; // 哈夫曼编译表
     EncoderTable(const string& c): HuffTree(c){ // 哈夫曼表类构造函数，初始化哈夫曼树类
-        huff_table = new TableBlock[text.length()]; // 初始化哈夫曼编译表
+        huff_table = new TableBlock[length]; // 初始化哈夫曼编译表
         build_huff_tree(); // 构建哈夫曼树
         build_huff_table(); // 构建哈夫曼编译表
     }
     void print_huff_table(); // 打印哈夫曼编译表
-    string get_text(){return text;} // 返回字符集的公开接口
+    string* get_text(){return text;} // 返回字符集的公开接口
+    int get_length(){return length;}
 };
 
 // 构造哈夫曼编译表
 void EncoderTable::build_huff_table(){
-    for(size_t i=0;i<text.length();++i){
+    for(size_t i=0;i<length;++i){
         huff_table[i].key = text[i]; // 键是字符
         huff_table[i].value = encoder(i); // 值是编译的二进制码（0、1字符串）
     }
@@ -136,7 +199,7 @@ string EncoderTable::encoder(size_t idx){
 
 // 打印哈夫曼编译表
 void EncoderTable::print_huff_table(){
-    for(size_t i=0;i<text.length();++i){
+    for(size_t i=0;i<length;++i){
         cout << huff_table[i].key << '\t' << huff_table[i].value << endl;
     }
 }
@@ -154,11 +217,20 @@ void encode(const string& content, string* encode_pair){
     string table_string = "";
     // 查表编译
     for(size_t i=0;i<content.length();++i){
-        codes += huff.huff_table[huff.get_text().find(content[i])].value;
+        string character;
+        if(content[i]<0||content[i]>127){
+            character = content.substr(i, 3);
+            codes += huff.huff_table[find_index(huff.get_text(), character, huff.get_length())].value;
+            i += 2;
+        }else{
+            character = string(1, content[i]);
+            codes += huff.huff_table[find_index(huff.get_text(), character, huff.get_length())].value;
+        }
+        
     }
     // 根据特定规则（如A:01,B:10=>A_01 B_10）输出表的字符串表示（方便传输）
-    for(size_t i=0;i<huff.get_text().length();++i){
-        table_string += string(1, huff.huff_table[i].key) + "_" + huff.huff_table[i].value + " ";
+    for(size_t i=0;i<huff.get_length();++i){
+        table_string += huff.huff_table[i].key + "_" + huff.huff_table[i].value + " ";
     }
     table_string.pop_back(); // 删掉最后一个空白字符
     // 放到输出的列表中
@@ -219,12 +291,32 @@ string decode(string name){
     return origin_content;
 }
 string handle_special_char(string original){
-    string c= "\n";
-    //cout<<c;
-    int position= original.find("\\n");
-    if (position!= std::string::npos) {
-        original.replace(position, c.length()+1, "\n");  
-    } 
+    for(int i=0;i<original.length();++i){
+        if(original[i]=='\\'){
+            if(i+1<original.length()){
+                if(original[i+1]=='n'){
+                    string c = "\n";
+                    original.replace(i, c.length()+1, "\n");
+                }
+                if(original[i+1]=='t'){
+                    string c = "\t";
+                    original.replace(i, c.length()+1, "\t");
+                }
+                if(original[i+1]=='\\'){
+                    string c = "\\";
+                    original.replace(i, c.length()+1, "\\");
+                }
+                if(original[i+1]=='r'){
+                    string c = "\r";
+                    original.replace(i, c.length()+1, "\r");
+                }
+                if(original[i+1]=='\"'){
+                    string c = "\"";
+                    original.replace(i, c.length()+1, "\"");
+                }
+            }
+        }
+    }
     //cout<<original[position+1]<<original[position+2];
     return original;
 }
