@@ -30,8 +30,18 @@ function generateOriginContent() {
     const fileInput = document.getElementById('file-encode');
     const file = fileInput.files[0];
     const fileType = file.type; // 获取文件类型
+    const maxFileSize = 10 * 1024 * 1024; // 限制文件大小为 10MB
 
-    const formData = new FormData();
+    if (!file) {
+        alert('请先选择一个文件！');
+        return;
+    }
+
+    if (file.size > maxFileSize) {
+        alert(`文件大小不能超过 ${maxFileSize / 1024 / 1024}MB！`);
+        return;
+    }
+    // const formData = new FormData();
     
     if (fileType == 'application/json') {
         // 如果是文本文件，直接上传文件内容
@@ -138,9 +148,20 @@ function generateOriginContent() {
 function uploadFile() {
     const fileInput = document.getElementById('file-input');
     const file = fileInput.files[0];
+    const maxFileSize = 1 * 1024 * 1024; // 限制文件大小为 1MB
+
+    if (!file) {
+        alert('请先选择一个文件！');
+        return;
+    }
+
+    if (file.size > maxFileSize) {
+        alert(`文件大小不能超过 ${maxFileSize / 1024 / 1024}MB！`);
+        return;
+    }
     const fileType = file.type; // 获取文件类型
 
-    const formData = new FormData();
+    // const formData = new FormData();
     
     if (fileType.startsWith('text')) {
         // 如果是文本文件，直接上传文件内容
@@ -225,7 +246,7 @@ function uploadFile() {
                 fileType: fileType,
                 fileContent: base64File // 传输 Base64 编码后的二进制内容
             };
-            
+            console.log(JSON.stringify(data));
             fetch('http://localhost:8080/upload', {
                 method: 'POST',
                 headers: {
