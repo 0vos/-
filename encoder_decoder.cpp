@@ -1,6 +1,7 @@
 #include "blocks.cpp"
 #include <iostream>
 #include <string>
+#include "io.cpp"
 using namespace std;
 
 // 哈夫曼树类
@@ -208,10 +209,10 @@ void EncoderTable::print_huff_table(){
 void encode(const string& content, string* encode_pair){
     // 构建一个哈夫曼表实例
     EncoderTable huff = EncoderTable(content);
-    printf("table:\n");
-    huff.print_huff_table();
-    printf("tree:\n");
-    huff.print_huff();
+    //printf("table:\n");
+    //huff.print_huff_table();
+    //printf("tree:\n");
+    //huff.print_huff();
     // 初始化字符串的编码为空、表的字符串表示为空
     string codes = "";
     string table_string = "";
@@ -242,45 +243,67 @@ void encode(const string& content, string* encode_pair){
 string decode(string name){
     string content= "";
     int i;
-    while(name[i]!= '\0'){
+    while(name[i]!= '\0'){//将json编码全部录入content
         content+= name[i];
         i++;
     }
     int number_of_words= 0;
-    for(int i=0; content[i]!= '\0';i++){
-        if(content[i]== ':'){
+    for(int i=0; content[i]!= '\0'; i++){
+        if(content[i]== ':'){//以冒号为隔断符号，用来数huff的结构体数组的个数
             number_of_words++;
-            if(content[i-1] == '\"' && content[i-2] == '\"'){
-                content.insert(i-1, 1, ' ');
+            if(content[i-1] == '\"' && content[i-2] == '\"'){//处理引号的保存方式
+                if(content[i-3]== '\\'){
+                    continue;
+                }else{
+                    content.insert(i-1, 1, ' ');
+                }
+                
             }
         }
     }
-    TableBlock *huff= new TableBlock[number_of_words];
+    TableBlock *huff= new TableBlock[number_of_words];//建立相应大小的huff结构体数组
     int j= 0;
-    //cout<<content[24]<<content[25]<<content[31]<<endl;
-    for(i=19; i<content.size(); i++){
-        huff[j].key= content[i];
-        i= i+4;
+    cout<<content<<endl;
+    int position_of_first_yinhao= content.find('\"',content.find(':'));//定位在冒号后的第一个引号，准备开始进行huff数组的录入   
+    for(i=position_of_first_yinhao; i<content.size(); i++){
+        position_of_first_yinhao= i;
+        //cout<<content[position_of_first_yinhao];
+        int position_of_second_yinhao= content.find('\"', position_of_first_yinhao+1);//这些用来处理引号的特殊情况
+        int position_of_third_yinhao= content.find('\"', position_of_second_yinhao+1);//
+        if(position_of_third_yinhao- position_of_second_yinhao== 1){//如果该字符是引号
+            huff[j].key= "\"";
+            i= content.find('\"', position_of_third_yinhao+1)+ 1;
+        }else if(content[position_of_first_yinhao+ 1]== ' '){//如果该字符是空格
+            huff[j].key= " ";
+            i= content.find('\"', position_of_second_yinhao+1)+1;
+        }else{//正常情况
+            huff[j].key= content.substr(position_of_first_yinhao, position_of_second_yinhao- position_of_first_yinhao);
+            i= content.find('\"', position_of_second_yinhao+1)+1;
+        }
+        if(j== 0){//这里调了很久，不知道哪里出现了问题，huff数组的第一个值永远都是带引号的，这个操作使其正常，后面的不受影响
+            huff[j].key= huff[j].key.substr(1);
+        }
         while(content[i]=='0'||content[i]=='1'){
-            huff[j].value+= content[i];
+            huff[j].value+= content[i];//录入哈夫曼字符串的编码
             i++;
         }
-        //cout<<i<<" "<<content[i+3]<<endl;
         cout<<huff[j].key<<" "<<huff[j].value<<endl;
-        if(content[i+1]!= ','){
+        if(content[i+1]!= ','){//判断结束标志
             break;
         }
-        i+= 2;
+        i= content.find('\"', i+1);//寻找下一个引号，判断下一次开始的位置
         j++;
     }
-    i+= 22;
-    string huff_code= content.substr(i, content.find("\"", i) - i);
-    cout << "huff code\n" <<huff_code << endl;
+    i= content.find(':', i)+3;//寻找下一个冒号，确定哈夫曼编码的开始位置
+    //cout<<content;
+    string huff_code= content.substr(i, content.find("\"", i) - i);//录入哈夫曼编码
+    //cout<<huff_code<<endl;
+    cout << "huff code\n" <<huff_code<< endl;
     string judge= "";
     string origin_content= "";
-    for(size_t i=0; i<huff_code.length(); ++i){
+    for(int i=0; i<huff_code.size(); i++){
         judge+= huff_code[i];
-        for(size_t k=0; k<j; ++k){//遍历哈夫曼编码
+        for(int k=0; k<=j; k++){//遍历哈夫曼编码
             if(judge== huff[k].value){
                 origin_content+= huff[k].key;//找到匹配并将其存入origin_content
                 judge= "";//还原judge为空
@@ -288,6 +311,7 @@ string decode(string name){
             }
         }
     }
+
     return origin_content;
 }
 string handle_special_char(string original){
@@ -320,11 +344,14 @@ string handle_special_char(string original){
     //cout<<original[position+1]<<original[position+2];
     return original;
 }
-// test
+//test
 // int main(){
 //     string list[2];
-//     encode("  Hello\nworld!", list);
-//     cout << list[0] <<endl << list[1] << endl;
-//     cout<<decode(list)<<endl;
+//     encode("我爱中国,shi\"中国\",不是#%^&国", list);
+//     //cout << list[0] <<endl << list[1] << endl;
+//     string json_content= convertToJSON("我爱中国,shi\"中国\",不是#%^&国", list[0], list[1], 0);
+//     //cout<<json_content;
+//     cout<<decode(json_content)<<endl;
+//       //Hello\nworl\"d!
 //     return 0;
 // }
