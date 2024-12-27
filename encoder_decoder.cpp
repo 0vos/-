@@ -1,7 +1,7 @@
 #include "blocks.cpp"
 #include <iostream>
 #include <string>
-#include "io.cpp"
+// #include "io.cpp"
 using namespace std;
 
 // 哈夫曼树类
@@ -294,7 +294,7 @@ string decode(string name){
         i= content.find('\"', i+1);//寻找下一个引号，判断下一次开始的位置
         j++;
     }
-    i= content.find(':', i)+3;//寻找下一个冒号，确定哈夫曼编码的开始位置
+    i= content.find(':', i)+2;//寻找下一个冒号，确定哈夫曼编码的开始位置
     //cout<<content;
     string huff_code= content.substr(i, content.find("\"", i) - i);//录入哈夫曼编码
     //cout<<huff_code<<endl;
