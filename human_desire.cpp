@@ -1,9 +1,19 @@
 #include<iostream>
 #include<string>
+#include <codecvt>
+#include <locale>
 using namespace std;
 //我直接将它做成一个管理系统，是针对于字符串的管理系统，因为我们无论是存储图片还是文本，最后都将其转化为字符串进行
 //哈夫曼压缩了，这个管理系统实现了对于字符串的增，删，改，查功能，将题目中的查询和更新全部实现
-int repeat(int i, int j, int next[], string in_test){
+wstring string_to_wstring(const string& str) {
+    wstring_convert<codecvt_utf8_utf16<wchar_t>> converter;
+    return converter.from_bytes(str);
+}
+string wstring_to_string(const wstring& wstr) {
+    wstring_convert<codecvt_utf8_utf16<wchar_t>> converter;
+    return converter.to_bytes(wstr);
+}
+int repeat(int i, int j, int next[], wstring in_test){
     //repeat函数主要用来递归计算next数组，就是采用最常规的next数组的计算方法
     if(i== 0){
         return 0;
@@ -19,14 +29,16 @@ int repeat(int i, int j, int next[], string in_test){
     }
 }
 string search(string test, string in_test){
-    int next[in_test.size()];//通过要匹配的字符串的长度来设置next数组的大小
-    for(size_t i=0;i<in_test.size();++i){
+    wstring wtest = string_to_wstring(test);
+    wstring win_test = string_to_wstring(in_test);
+    int next[win_test.size()];//通过要匹配的字符串的长度来设置next数组的大小
+    for(size_t i=0;i<win_test.size();++i){
         next[i] = 0;//将其初始化为0
     }
     int i=0, j=1;
     //计算next数组
-    while(j<= in_test.size()){
-        if(in_test[j]== in_test[i]){
+    while(j<= win_test.size()){
+        if(win_test[j]== win_test[i]){
             next[j]= i+1;
             i++;
             j++;
@@ -34,7 +46,7 @@ string search(string test, string in_test){
             if(i== 0){
                 j++;
             }else{
-                i= repeat(i, j, next, in_test);
+                i= repeat(i, j, next, win_test);
             }
         }
     }
@@ -42,14 +54,14 @@ string search(string test, string in_test){
     int judge= 0;
     string posion= "";
     //以下使用kmp匹配算法
-    while(j<= test.size()){
-        if(i== in_test.size()){//j去遍历test数组，i去遍历in_test数组，当i==in_test.size()时，说明完全匹配上了
+    while(j<= wtest.size()){
+        if(i== win_test.size()){//j去遍历test数组，i去遍历in_test数组，当i==in_test.size()时，说明完全匹配上了
             judge++;//judge用来计数在当前test字符串中有多少个与in_test相同的字符串
-            posion+= to_string(j-in_test.size());//position用来计数in_test字符串出现在test中的哪里，将数字以字符串的形式存储起来  
+            posion+= to_string(j-win_test.size());//position用来计数in_test字符串出现在test中的哪里，将数字以字符串的形式存储起来  
             posion+="_";//每个位置之间用_隔开
             i= 0;//将i清空，开始下一次匹配
         }else{
-            if(test[j]== in_test[i]){//当字符相等时，匹配下一个
+            if(wtest[j]== win_test[i]){//当字符相等时，匹配下一个
                 i++;
                 j++;
             }else{//不相等时
@@ -57,7 +69,7 @@ string search(string test, string in_test){
                     j++;
                 }else{
                     i= next[i-1];//根据next数组，跳转至相应的in_test位置进行比较
-                    if(test[j]== in_test[i]){//相等时匹配下一个
+                    if(wtest[j]== win_test[i]){//相等时匹配下一个
                         i++;
                     }
                     j++;
@@ -99,68 +111,52 @@ void posion_of_number(int *p, string test, string in_test){//该函数用于将p
         j++;
     }
 }
-string get_total_part(string test, string in_test){//为了以实际情况相结合以及方便用户使用，会将搜索到的in_test字符串在原test字符串中的前后5个字符进行输出，方便用户知道在哪里进行修改
+string get_total_part(string test, string in_test){//为了以实际情况相结合以及方便用户使用，会将搜索到的in_test字符串在原test字符串中的前后6个字符进行输出，方便用户知道在哪里进行修改
+    wstring wtest = string_to_wstring(test);
+    wstring win_test = string_to_wstring(in_test);
     int count= count_num_of_same(test, in_test);//
     int *p= new int(count);
     posion_of_number(p, test, in_test);//将位置录入到p数组中，以数字形式存储起来
+    // for(int i=0; i<count; i++){
+    //     cout<<p[i]<<endl;
+    // }
     if(count== 0){
         return "";
-    }else{
-        //cout<<"存在"<<endl;
     }
     int j= 0;
-    string part1, part2;
-    string final_all= "";
-    //以下是对test字符串中的边缘进行检测，如果in_test字符串靠近开头，可能会出现开头到in_test没有5个字符的可能，那么就是有多少输出多少，末尾也是如此
+    wstring part1, part2;
+    wstring final_all= L"";
+    //以下是对test字符串中的边缘进行检测，如果in_test字符串靠近开头，可能会出现开头到in_test没有6个字符的可能，那么就是有多少输出多少，末尾也是如此
     for(j=0; j<count; j++){
         if(p[j]-6> 0){
-            part1= test.substr(p[j]-6, 6);
-            if(p[j]+6< test.size()){
-                part2= test.substr(p[j]+in_test.size(), 6);
+            part1= wtest.substr(p[j]-6, 6);
+            if(p[j]+win_test.size()+6< wtest.size()){
+                part2= wtest.substr(p[j]+win_test.size(), 6);
             }else{
-                part2= test.substr(p[j]+in_test.size());
+                part2= wtest.substr(p[j]+win_test.size());
             }
         }else{
-            part1= test.substr(0, p[j]);
-            if(p[j]+6< test.size()){
-                part2= test.substr(p[j]+in_test.size(), 6);
+            part1= wtest.substr(0, p[j]);
+            if(p[j]+win_test.size()+6< wtest.size()){
+                part2= wtest.substr(p[j]+win_test.size(), 6);
             }else{
-                part2= test.substr(p[j]+in_test.size());
+                part2= wtest.substr(p[j]+win_test.size());
             }
         }    
-        //cout<<j+1<<"."<<"\033[31m"<<part1<<" "<<"\033[33m"<<part2<<"\033[0m"<<endl;
-        final_all+= (to_string(j+1)+ "."+ part1 +"("+in_test+")"+part2+ "\n");//加括号，使其更加醒目
+
+        final_all+= (to_wstring(j+1)+ L"."+ part1 +L"("+win_test+L")"+part2+ L"\n");//加括号，使其更加醒目
     }
-    cout<<final_all;
-    return final_all;
+    string result= wstring_to_string(final_all);
+    cout<<result;
+    return result;
 }
-// int main()
-// {
-//     string test= "adjasjdhaqabanqwqkejqkeabaadadad";
-//     string in_test= "aba";
-//     //对位置进行切割，找到该字符串出现的所有位置
+int main()
+{
+    string test= "中国人ujasdhjausiod{$%^&*\"so人是guo国";
+    string in_test= "人";
+    //对位置进行切割，找到该字符串出现的所有位置
     
-//     cout<<"请输入想进行的操作1.查找 2.退出"<<endl;
-//     string choice;
-//     cin>>choice;
-//     while(choice[0]!= '\0'){
-//         if(choice== "1"){
-//             string posion= search(test, in_test);
-//             if(posion!= "" &&posion!= "0"){
-//                 cout<<"存在"<<endl;
-//             }else{
-//                 cout<<"不存在"<<endl;
-//             }
-//             get_total_part(test, in_test);
-//         }else if(choice=="2"){
-//             break;
-//         }
-//         else{
-//             cout<<"输入格式不对"<<endl;
-//         }
-//         cout<<"请输入想进行的操作1.查找2.退出"<<endl;
-//         cin>>choice;
-//     }
+    get_total_part(test, in_test);
     
-//     return 0;
-// }
+    return 0;
+}
