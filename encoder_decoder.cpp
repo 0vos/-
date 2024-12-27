@@ -263,7 +263,7 @@ string decode(string name){
     }
     TableBlock *huff= new TableBlock[number_of_words];//建立相应大小的huff结构体数组
     int j= 0;
-    cout<<content<<endl;
+    // cout<<content<<endl;
     int position_of_first_yinhao= content.find('\"',content.find(':'));//定位在冒号后的第一个引号，准备开始进行huff数组的录入   
     for(i=position_of_first_yinhao; i<content.size(); i++){
         position_of_first_yinhao= i;
