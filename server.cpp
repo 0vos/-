@@ -30,6 +30,7 @@ void handle_decode_string(int client_socket, const string& input_string, const s
     cout << "decode before\n" << input_string << endl;
     string origin = handle_special_char(input_string);
     origin = decode(origin);
+    cout << "origin1\n" << origin << endl;
     origin = refined_string2json(origin);
     cout << "origin\n" << origin << endl;
     // 获取真正的文件名
