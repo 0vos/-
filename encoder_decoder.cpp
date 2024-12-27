@@ -261,11 +261,13 @@ string decode(string name){
             }
         }
     }
+    //cout<<content;
     TableBlock *huff= new TableBlock[number_of_words];//建立相应大小的huff结构体数组
     int j= 0;
     cout<<content<<endl;
     int position_of_first_yinhao= content.find('\"',content.find(':'));//定位在冒号后的第一个引号，准备开始进行huff数组的录入   
-    for(i=position_of_first_yinhao; i<content.size(); i++){
+    for(i=position_of_first_yinhao+1; i<content.size(); i++){
+        i--;
         position_of_first_yinhao= i;
         //cout<<content[position_of_first_yinhao];
         int position_of_second_yinhao= content.find('\"', position_of_first_yinhao+1);//这些用来处理引号的特殊情况
@@ -277,12 +279,12 @@ string decode(string name){
             huff[j].key= " ";
             i= content.find('\"', position_of_second_yinhao+1)+1;
         }else{//正常情况
-            huff[j].key= content.substr(position_of_first_yinhao, position_of_second_yinhao- position_of_first_yinhao);
+            huff[j].key= content.substr(position_of_first_yinhao+1, position_of_second_yinhao- position_of_first_yinhao-1);
             i= content.find('\"', position_of_second_yinhao+1)+1;
         }
-        if(j== 0){//这里调了很久，不知道哪里出现了问题，huff数组的第一个值永远都是带引号的，这个操作使其正常，后面的不受影响
-            huff[j].key= huff[j].key.substr(1);
-        }
+        // if(j== 0){//这里调了很久，不知道哪里出现了问题，huff数组的第一个值永远都是带引号的，这个操作使其正常，后面的不受影响
+        //     huff[j].key= huff[j].key.substr(1);
+        // }
         while(content[i]=='0'||content[i]=='1'){
             huff[j].value+= content[i];//录入哈夫曼字符串的编码
             i++;
@@ -298,7 +300,7 @@ string decode(string name){
     //cout<<content;
     string huff_code= content.substr(i, content.find("\"", i) - i);//录入哈夫曼编码
     //cout<<huff_code<<endl;
-    cout << "huff code\n" <<huff_code<< endl;
+    //cout << "huff code\n" <<huff_code<< endl;
     string judge= "";
     string origin_content= "";
     for(int i=0; i<huff_code.size(); i++){
@@ -344,14 +346,16 @@ string handle_special_char(string original){
     //cout<<original[position+1]<<original[position+2];
     return original;
 }
-//test
+// //test
 // int main(){
 //     string list[2];
 //     encode("我爱中国,shi\"中国\",不是#%^&国", list);
 //     //cout << list[0] <<endl << list[1] << endl;
-//     string json_content= convertToJSON("我爱中国,shi\"中国\",不是#%^&国", list[0], list[1], 0);
+//     string original= R"({"encoding_table":{"I":"0010","":"111","w":"0011","a":"0100","n":"0101","t":"000","o":"110","g":"0110","\"":"0111","h":"1000","m":"1001","e":"1010",".":"1011"},"encoded_content":"0010111001101000101000111000110111011011001111111000110100110101011"})";
+//     //cout<<original;
+//     //string json_content= handle_special_char("我爱中国,shi\"中国\",不是#%^&国", list[0], list[1], 0);
 //     //cout<<json_content;
-//     cout<<decode(json_content)<<endl;
-//       //Hello\nworl\"d!
+//     cout<<decode(original)<<endl;
+//     //Hello\nworl\"d!
 //     return 0;
 // }
