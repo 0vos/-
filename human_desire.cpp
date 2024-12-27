@@ -113,17 +113,17 @@ string get_total_part(string test, string in_test){//为了以实际情况相结
     string final_all= "";
     //以下是对test字符串中的边缘进行检测，如果in_test字符串靠近开头，可能会出现开头到in_test没有5个字符的可能，那么就是有多少输出多少，末尾也是如此
     for(j=0; j<count; j++){
-        if(p[j]-5> 0){
-            part1= test.substr(p[j]-5, 5);
-            if(p[j]+5< test.size()){
-                part2= test.substr(p[j]+in_test.size(), 5);
+        if(p[j]-6> 0){
+            part1= test.substr(p[j]-6, 6);
+            if(p[j]+6< test.size()){
+                part2= test.substr(p[j]+in_test.size(), 6);
             }else{
                 part2= test.substr(p[j]+in_test.size());
             }
         }else{
             part1= test.substr(0, p[j]);
-            if(p[j]+5< test.size()){
-                part2= test.substr(p[j]+in_test.size(), 5);
+            if(p[j]+6< test.size()){
+                part2= test.substr(p[j]+in_test.size(), 6);
             }else{
                 part2= test.substr(p[j]+in_test.size());
             }
