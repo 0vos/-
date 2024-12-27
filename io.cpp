@@ -219,6 +219,9 @@ string refined_string2json(const string& origin){
         if(character=="\t"){
             character = "\\t";
         }
+        if(character=="\""){
+            character = "\\\"";
+        }
         refined_content += character;
     }
     return refined_content;
