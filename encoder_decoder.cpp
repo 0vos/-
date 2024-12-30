@@ -318,47 +318,55 @@ string decode(string name){
             if(origin_content[i+1]== 'n'){
                 string c = "\n";
                 origin_content.replace(i, c.length()+1, "\n");
+                continue;
             }
             if(origin_content[i+1]== 't'){
                 string c = "\t";
                 origin_content.replace(i, c.length()+1, "\t");
+                continue;
             }
             if(origin_content[i+1]== 'r'){
                 string c = "\r";
                 origin_content.replace(i, c.length()+1, "\r");
+                continue;
             }
             if(origin_content[i+1]== '\\'){
                 string c = "\\";
                 origin_content.replace(i, c.length()+1, "\\");
+                continue;
             }
         }
-        
     }
     return origin_content;
 }
 string handle_special_char(string original){
-    for(int i=0;i<original.length();++i){
+    for(int i=0;i<original.length();i++){
         if(original[i]=='\\'){
             if(i+1<original.length()){
                 if(original[i+1]=='n'){
                     string c = "\n";
                     original.replace(i, c.length()+1, "\n");
+                    continue;
                 }
                 if(original[i+1]=='t'){
                     string c = "\t";
                     original.replace(i, c.length()+1, "\t");
+                    continue;
                 }
                 if(original[i+1]=='\\'){
                     string c = "\\";
                     original.replace(i, c.length()+1, "\\");
+                    continue;
                 }
                 if(original[i+1]=='r'){
                     string c = "\r";
                     original.replace(i, c.length()+1, "\r");
+                    continue;
                 }
                 if(original[i+1]=='\"'){
                     string c = "\"";
                     original.replace(i, c.length()+1, "\"");
+                    continue;
                 }
             }
         }

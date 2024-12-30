@@ -113,35 +113,6 @@ function generateOriginContent() {
             });
         };
         reader.readAsText(file); // 读取文本文件
-    } else {
-        // 如果是二进制文件，进行 Base64 编码后上传
-        const reader = new FileReader();
-        reader.onloadend = function() {
-            const base64File = btoa(reader.result); // 转换为 Base64 编码
-            
-            const data = {
-                fileName: file.name,
-                fileType: fileType,
-                fileContent: base64File // 传输 Base64 编码后的二进制内容
-            };
-            
-            fetch('http://localhost:8080/upload', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data) // 将 JSON 对象转为字符串
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('file-decode').innerText = "上传成功！" + data.encoded_content;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('file-decode').innerText = "上传失败：" + error.message;
-            });
-        };
-        reader.readAsBinaryString(file); // 读取二进制文件
     }
 }
 
@@ -423,6 +394,7 @@ function searchString(updated_id='input-string') {
         <h3>查找字符串</h3>
         <input id="search-input" type="text" />
         <button onclick="submitSearch('${updated_id}')">查找</button>
+        <h5> 搜索范围最多 200 个字符，无法搜索换行符等字符</h5>
         <div id="search-result"></div>
     `;
 }
@@ -430,8 +402,9 @@ function searchString(updated_id='input-string') {
 function submitSearch(origin) {
     const input_string = document.getElementById(origin).value;
     const search = document.getElementById('search-input').value;
+    const truncate_string = input_string.slice(0, 200);
     const data = {
-        OriginString: input_string,
+        OriginString: truncate_string,
         Search: search
     };
     console.log(search);
@@ -486,6 +459,6 @@ function handleBase64Image(base64Data) {
 
       img.src = URL.createObjectURL(blob);
     } catch (e) {
-      resultDiv.innerHTML = `<h3>Error: Invalid Base64 data</h3>`;
+      resultDiv.innerHTML = `<h3>Invalid Base64 data</h3>`;
     }
 }

@@ -5,38 +5,6 @@
 #include <sstream>
 using namespace std;
 
-// 获取图片文件信息
-string get_image(const string& file_path){
-    // TODO: 将png或jpg图片的二进制内容转到字符串中（图像转成字符串，字符串进行压缩）
-    return string();
-}
-
-// 获取文本文件信息
-string get_text(const string& file_path){
-    ifstream text(file_path);
-    if(!text.is_open()){
-        printf("无法打开文件\n");
-        exit(1);
-    }
-    // 获取整个文本
-    string content, line;
-    while(getline(text, line)){
-        content += line;
-        content += "\n";
-    }
-    cout << content << endl;
-    text.close();
-    return content;
-}
-
-// 获取人工输入信息
-string get_text(){
-    string content;
-    getline(cin, content);
-    cout << content << endl;
-    return content;
-}
-
 // 获取随机生成的信息
 string get_text(int max_length, int min_ascii, int max_ascii){
     // 初始化随机生成器
@@ -52,26 +20,6 @@ string get_text(int max_length, int min_ascii, int max_ascii){
     return content;
 }
 
-// 获取编码文件信息
-void get_huff(const string& file_path, string* output_list){
-    // TODO: output_list[0]为哈夫曼表字符串，output_list[1]为剩余的“0”“1”构成的字符串
-}
-
-/*
-将编码信息写到编码文件.txt（放到data目录下）
-编码信息比如：
-哈夫曼表
-key value
-A   0
-B   10
-C   111
-字符串“ABC”对应的编码内容：010111
-写入压缩文件中的格式：
-A_0 B_10 C_111###010111
-*/
-void save_huff(const string& file_path, string* pair){
-    // TODO: 把哈夫曼表和编码内容写道压缩文件中, pair是用encode生成出表字符串、编码字符串对
-}
 
 // 保存内容到文件
 void save_content(const string& file_path, string content){
@@ -80,15 +28,11 @@ void save_content(const string& file_path, string content){
         outfile << content;
     }
     else{
-        printf("保存文件路径不存在");
-        exit(1);
+        printf("保存文件路径不存在!");
+        exit(0);
     }
 }
 
-// 恢复图像
-void recover_image(const string& file_path, string content){
-    // TODO: 将解码后的图像的二进制码恢复到图像
-}
 
 // 字符串到json
 string convertToJSON(const string& origin_content, const string& encodingTableString, const string& encodedContent, bool compress_mode=false) {
@@ -170,7 +114,7 @@ bool fileExists(const string& file_name) {
 }
 // 保存json字符串到json文件
 void save_json(const string& json_string, const string& file_name){
-    string txt_file_path = "data/" + file_name + ".json";
+    string txt_file_path = "data/json/" + file_name + ".json";
     if(fileExists(txt_file_path)){
         save_content(txt_file_path, json_string);
     }
@@ -181,7 +125,7 @@ void save_json(const string& json_string, const string& file_name){
         }
         else{
             printf("创建文件失败！\n");
-            exit(1);
+            exit(0);
         }
     }
 }
@@ -198,7 +142,7 @@ void save_txt(const string& origin_string, const string& file_name){
         }
         else{
             printf("创建文件失败！\n");
-            exit(1);
+            exit(0);
         }
     }
 }
@@ -223,25 +167,6 @@ string refined_string2json(const string& origin){
             character = "\\\"";
         }
         refined_content += character;
-    }
-    return refined_content;
-}
-// 更新字符串中的双引号
-string refined_json2string(const string& origin){
-    string refined_content = "";
-    for(size_t i=0;i<origin.length();++i){
-        if(origin[i]=='\\'){
-            if(i+1<origin.length()){
-                if(origin[i+1]=='"'){
-                    refined_content += "\"";
-                    continue;
-                }
-            }
-        }
-        if(origin[i]=='"'){
-            continue;
-        }
-        refined_content += origin[i];
     }
     return refined_content;
 }

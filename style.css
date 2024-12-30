@@ -87,3 +87,9 @@ textarea {
     outline: none;           /* 取消默认的聚焦时外轮廓 */
     background-color: #fefefe; /* 聚焦时背景颜色 */
   }
+
+  h3 {
+    max-width: 1000px;  /* 设置最大宽度 */
+    word-wrap: break-word;  /* 确保长单词在需要时换行 */
+    overflow-wrap: break-word;  /* 避免单词溢出 */
+  }

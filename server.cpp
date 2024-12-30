@@ -1,14 +1,11 @@
 #include "io.cpp"
 #include "encoder_decoder.cpp"
 #include "human_desire.cpp"
-#include <fstream>
 #include <iostream>
-#include <sstream>
 #include <string>
+#include <signal.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <regex>
-#include <cstring>
 
 #define PORT 8080
 const int BUFFER_SIZE = 8192;
@@ -27,179 +24,200 @@ string get_mime_type(const string& file_path) {
 }
 
 void handle_decode_string(int client_socket, const string& input_string, const string& file_name) {
-    cout << "decode before\n" << input_string << endl;
-    // cout << "origin0\n" << origin << endl;
-    string origin = decode(input_string);
-    cout << "origin1\n" << origin << endl;
-    origin = refined_string2json(origin);
-    cout << "origin\n" << origin << endl;
-    // 获取真正的文件名
-    string ffile_name;
-    size_t dot_pos = file_name.find(".");
-    if(dot_pos!=string::npos){
-        ffile_name = file_name.substr(0, dot_pos);
-    }
-    else{
-        ffile_name = file_name;
-    }
-      // 找到 "encoded_content" 后的结束位置
-    size_t pos = input_string.find("\"encoded_content\":");
-    string new_json = input_string;
-    if (pos != std::string::npos) {
-        pos = input_string.find("}", pos);
-        if (pos != std::string::npos) {
-            // 在 "encoded_content" 后面添加 "origin"
-            new_json.insert(pos, ",\n    \"origin_data\": \"" + origin + "\"");
+    try{
+        cout << "decode before\n" << input_string << endl;
+        // cout << "origin0\n" << origin << endl;
+        string origin = decode(input_string);
+        cout << "origin1\n" << origin << endl;
+        origin = refined_string2json(origin);
+        cout << "origin\n" << origin << endl;
+        // 获取真正的文件名
+        string ffile_name;
+        size_t dot_pos = file_name.find(".");
+        if(dot_pos!=string::npos){
+            ffile_name = file_name.substr(0, dot_pos);
         }
+        else{
+            ffile_name = file_name;
+        }
+          // 找到 "encoded_content" 后的结束位置
+        size_t pos = input_string.find("\"encoded_content\":");
+        string new_json = input_string;
+        if (pos != std::string::npos) {
+            pos = input_string.find("}", pos);
+            if (pos != std::string::npos) {
+                // 在 "encoded_content" 后面添加 "origin"
+                new_json.insert(pos, ",\n    \"origin_data\": \"" + origin + "\"");
+            }
+        }
+        cout << new_json << endl;
+        // 构建响应体
+        string response_body = new_json;
+        // 保存源码到txt文件
+        origin = handle_special_char(origin);
+        save_txt(origin, ffile_name + "_decoded");
+        // 构造 HTTP 响应
+        string http_response =
+            "HTTP/1.1 200 OK\r\n"                              // 返回成功状态码
+            "Content-Type: application/json\r\n"              // 明确指定 JSON 类型
+            "Access-Control-Allow-Origin: *\r\n"              // 允许所有源
+            "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
+            "Access-Control-Allow-Headers: Content-Type\r\n"  // 允许 Content-Type 请求头
+            "Content-Length: " + to_string(response_body.length()) + "\r\n\r\n" +
+            response_body;
+    
+        // 发送响应
+        send(client_socket, http_response.c_str(), http_response.length(), 0);
+        close(client_socket);
+    } catch (const std::exception& e) {
+        std::cerr << "Error occurred in handle_decode_string function: " << e.what() << std::endl;
     }
-    cout << new_json << endl;
-    // 构建响应体
-    string response_body = new_json;
-    // 保存源码到txt文件
-    origin = handle_special_char(origin);
-    save_txt(origin, ffile_name + "_decoded");
-    // 构造 HTTP 响应
-    string http_response =
-        "HTTP/1.1 200 OK\r\n"                              // 返回成功状态码
-        "Content-Type: application/json\r\n"              // 明确指定 JSON 类型
-        "Access-Control-Allow-Origin: *\r\n"              // 允许所有源
-        "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
-        "Access-Control-Allow-Headers: Content-Type\r\n"  // 允许 Content-Type 请求头
-        "Content-Length: " + to_string(response_body.length()) + "\r\n\r\n" +
-        response_body;
-
-    // 发送响应
-    send(client_socket, http_response.c_str(), http_response.length(), 0);
-    close(client_socket);
 }
 
 void find_string(int client_socket, const string& input_string, const string& find_string) {
-    string af_string = regex_replace(input_string, regex("\\\\n"), "\n");
-    string ff_string = regex_replace(find_string, regex("\\\\n"), "\n");
-    af_string = handle_special_char(af_string);
-    ff_string = handle_special_char(ff_string);
-    cout << "af_string: " << af_string << "ff_string: " << ff_string << endl;
-    string find_out = get_total_part(af_string, ff_string);
-    cout << "find_out: " << find_out << endl;
-    find_out = refined_string2json(find_out);
-    cout << "refined: " << find_out << endl;
-    string response_body = "{\n  \"find_content\": \"" + find_out + "\"\n}";
+    try{
+        // string af_string = regex_replace(input_string, regex("\\\\n"), "\n");
+        // string ff_string = regex_replace(find_string, regex("\\\\n"), "\n");
+        string af_string = handle_special_char(input_string);
+        string ff_string = handle_special_char(find_string);
+        cout << "af_string: " << af_string << "ff_string: " << ff_string << endl;
+        string find_out = get_total_part(af_string, ff_string);
+        cout << "find_out: " << find_out << endl;
+        find_out = refined_string2json(find_out);
+        cout << "refined: " << find_out << endl;
+        string response_body = "{\n  \"find_content\": \"" + find_out + "\"\n}";
 
-    // 构造 HTTP 响应
-    string http_response =
-        "HTTP/1.1 200 OK\r\n"                              // 返回成功状态码
-        "Content-Type: application/json\r\n"              // 明确指定 JSON 类型
-        "Access-Control-Allow-Origin: *\r\n"              // 允许所有源
-        "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
-        "Access-Control-Allow-Headers: Content-Type\r\n"  // 允许 Content-Type 请求头
-        "Content-Length: " + to_string(response_body.length()) + "\r\n\r\n" +
-        response_body;
+        // 构造 HTTP 响应
+        string http_response =
+            "HTTP/1.1 200 OK\r\n"                              // 返回成功状态码
+            "Content-Type: application/json\r\n"              // 明确指定 JSON 类型
+            "Access-Control-Allow-Origin: *\r\n"              // 允许所有源
+            "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
+            "Access-Control-Allow-Headers: Content-Type\r\n"  // 允许 Content-Type 请求头
+            "Content-Length: " + to_string(response_body.length()) + "\r\n\r\n" +
+            response_body;
 
-    // 发送响应
-    send(client_socket, http_response.c_str(), http_response.length(), 0);
+        // 发送响应
+        send(client_socket, http_response.c_str(), http_response.length(), 0);
 
-    // 关闭连接
-    close(client_socket);
+        // 关闭连接
+        close(client_socket);
+    } catch (const std::exception& e) {
+        std::cerr << "Error occurred in find_string function: " << e.what() << std::endl;
+    }
 }
 
 void handle_file_upload(int client_socket, const string& input_string, const string& file_name) {
-    // 响应内容
-    cout << "origin content:\n" << input_string.substr(0, 100) << endl;
-    string af_string = regex_replace(input_string, regex("\\\\n"), "\n");
-    af_string = handle_special_char(af_string);
-    string compressed[2];
-    encode(af_string, compressed);
-    string response_body = convertToJSON(af_string, compressed[0], compressed[1]);
+    try{
+        // 响应内容
+        cout << "origin content:\n" << input_string.substr(0, 100) << endl;
+        // string af_string = regex_replace(input_string, regex("\\\\n"), "\n");
+        string af_string = handle_special_char(input_string);
+        string compressed[2];
+        encode(af_string, compressed);
+        string response_body = convertToJSON(af_string, compressed[0], compressed[1]);
 
-    // 获取文件名
-    string ffile_name;
-    size_t dot_pos = file_name.find(".");
-    if(dot_pos!=string::npos){
-        ffile_name = file_name.substr(0, dot_pos);
+        // 获取文件名
+        string ffile_name;
+        size_t dot_pos = file_name.find(".");
+        if(dot_pos!=string::npos){
+            ffile_name = file_name.substr(0, dot_pos);
+        }
+        // 保存编码到json文件中
+        string compressed_body = convertToJSON(af_string, compressed[0], compressed[1], true);
+        save_json(compressed_body, ffile_name);
+
+        // HTTP 响应头，添加 CORS 支持
+        string http_response =
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: application/json\r\n"
+            "Access-Control-Allow-Origin: *\r\n"
+            "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
+            "Access-Control-Allow-Headers: Content-Type\r\n"
+            "Content-Length: " + to_string(response_body.length()) + "\r\n\r\n" +
+            response_body;
+
+        send(client_socket, http_response.c_str(), http_response.length(), 0);
+        close(client_socket);
+    } catch (const std::exception& e) {
+        std::cerr << "Error occurred in handle_file_upload function: " << e.what() << std::endl;
     }
-    // 保存编码到json文件中
-    string compressed_body = convertToJSON(af_string, compressed[0], compressed[1], true);
-    save_json(compressed_body, ffile_name);
-
-    // HTTP 响应头，添加 CORS 支持
-    string http_response =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: application/json\r\n"
-        "Access-Control-Allow-Origin: *\r\n"
-        "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
-        "Access-Control-Allow-Headers: Content-Type\r\n"
-        "Content-Length: " + to_string(response_body.length()) + "\r\n\r\n" +
-        response_body;
-
-    send(client_socket, http_response.c_str(), http_response.length(), 0);
-    close(client_socket);
 }
 
 void handle_string_input(int client_socket, const string& input_string, const string& file_name) {
-    // 获取文件名
-    // string af_string = regex_replace(input_string, regex("\\\\n"), "\n");
-    string af_string = handle_special_char(input_string);
-    cout << "af_string: "<<af_string << endl;
-    string ffile_name;
-    size_t dot_pos = file_name.find(".");
-    if(dot_pos!=string::npos){
-        ffile_name = file_name.substr(0, dot_pos);
-    }
-    else{
-        ffile_name = file_name;
-    }
-    save_txt(af_string, ffile_name);
-    // 编码字符串
-    string compressed[2];
-    encode(af_string, compressed);
-    // printf("\nencode succeed!\n");
-    string response_body = convertToJSON(af_string, compressed[0], compressed[1]);
-    // cout << "\nresponse\n" << response_body << endl;
-    // 保存编码到json文件中
-    string compressed_body = convertToJSON(af_string, compressed[0], compressed[1], true);
-    save_json(compressed_body, ffile_name);
-    // 构造 HTTP 响应
-    string http_response =
-        "HTTP/1.1 200 OK\r\n"                              // 返回成功状态码
-        "Content-Type: application/json\r\n"              // 明确指定 JSON 类型
-        "Access-Control-Allow-Origin: *\r\n"              // 允许所有源
-        "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
-        "Access-Control-Allow-Headers: Content-Type\r\n"  // 允许 Content-Type 请求头
-        "Content-Length: " + to_string(response_body.length()) + "\r\n\r\n" +
-        response_body;
-    // 发送响应
-    send(client_socket, http_response.c_str(), http_response.length(), 0);
+    try{
+        // 获取文件名
+        // string af_string = regex_replace(input_string, regex("\\\\n"), "\n");
+        // cout << "input:\n"<<input_string << endl;
+        string af_string = handle_special_char(input_string);
+        cout << "af_string: "<<af_string << endl;
+        string ffile_name;
+        size_t dot_pos = file_name.find(".");
+        if(dot_pos!=string::npos){
+            ffile_name = file_name.substr(0, dot_pos);
+        }
+        else{
+            ffile_name = file_name;
+        }
+        save_txt(af_string, ffile_name);
+        // 编码字符串
+        string compressed[2];
+        encode(af_string, compressed);
+        // printf("\nencode succeed!\n");
+        string response_body = convertToJSON(af_string, compressed[0], compressed[1]);
+        // cout << "\nresponse\n" << response_body << endl;
+        // 保存编码到json文件中
+        string compressed_body = convertToJSON(af_string, compressed[0], compressed[1], true);
+        save_json(compressed_body, ffile_name);
+        // 构造 HTTP 响应
+        string http_response =
+            "HTTP/1.1 200 OK\r\n"                              // 返回成功状态码
+            "Content-Type: application/json\r\n"              // 明确指定 JSON 类型
+            "Access-Control-Allow-Origin: *\r\n"              // 允许所有源
+            "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
+            "Access-Control-Allow-Headers: Content-Type\r\n"  // 允许 Content-Type 请求头
+            "Content-Length: " + to_string(response_body.length()) + "\r\n\r\n" +
+            response_body;
+        // 发送响应
+        send(client_socket, http_response.c_str(), http_response.length(), 0);
 
-    // 关闭连接
-    close(client_socket);
+        // 关闭连接
+        close(client_socket);
+    } catch (const std::exception& e) {
+        std::cerr << "Error occurred in handle_string_input function: " << e.what() << std::endl;
+    }
 }
 
 // 用于生成随机字符串
 void handle_random_string(int client_socket) {
-    string random_str = get_text(10, 48, 78);
-    // 保存源码到txt
-    random_str = handle_special_char(random_str);
-    save_txt(random_str, "random_input");
-    string compressed[2];
-    string af_string = regex_replace(random_str, regex("\\\\n"), "\n");
-    encode(af_string, compressed);
-    string response_body = convertToJSON(af_string, compressed[0], compressed[1]);
-    // 保存编码到json文件中
-    string compressed_body = convertToJSON(af_string, compressed[0], compressed[1], true);
-    save_json(compressed_body, "random_input");
-    // 构造 HTTP 响应
-    string http_response =
-        "HTTP/1.1 200 OK\r\n"                              // 返回成功状态码
-        "Content-Type: application/json\r\n"              // 明确指定 JSON 类型
-        "Access-Control-Allow-Origin: *\r\n"              // 允许所有源
-        "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
-        "Access-Control-Allow-Headers: Content-Type\r\n"  // 允许 Content-Type 请求头
-        "Content-Length: " + std::to_string(response_body.length()) + "\r\n\r\n" +
-        response_body;
+    try{
+        string random_str = get_text(10, 48, 78);
+        // 保存源码到txt
+        string af_string = handle_special_char(random_str);
+        save_txt(random_str, "random_input");
+        string compressed[2];
+        // string af_string = regex_replace(random_str, regex("\\\\n"), "\n");
+        encode(af_string, compressed);
+        string response_body = convertToJSON(af_string, compressed[0], compressed[1]);
+        // 保存编码到json文件中
+        string compressed_body = convertToJSON(af_string, compressed[0], compressed[1], true);
+        save_json(compressed_body, "random_input");
+        // 构造 HTTP 响应
+        string http_response =
+            "HTTP/1.1 200 OK\r\n"                              // 返回成功状态码
+            "Content-Type: application/json\r\n"              // 明确指定 JSON 类型
+            "Access-Control-Allow-Origin: *\r\n"              // 允许所有源
+            "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
+            "Access-Control-Allow-Headers: Content-Type\r\n"  // 允许 Content-Type 请求头
+            "Content-Length: " + std::to_string(response_body.length()) + "\r\n\r\n" +
+            response_body;
 
-    // 发送响应
-    send(client_socket, http_response.c_str(), http_response.length(), 0);
-    close(client_socket);
+        // 发送响应
+        send(client_socket, http_response.c_str(), http_response.length(), 0);
+        close(client_socket);
+    } catch (const std::exception& e) {
+        std::cerr << "Error occurred in handle_random_string function: " << e.what() << std::endl;
+    }
 }
 
 // 处理静态文件请求
@@ -401,6 +419,7 @@ void serve_request(int client_socket, const string& request) {
 }
 
 int main() {
+    signal(SIGSEGV, handle_segfault);
     int server_fd, new_socket;
     struct sockaddr_in address;
     int addrlen = sizeof(address);
