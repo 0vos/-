@@ -419,23 +419,23 @@ function generateRandomString() {
 
 function searchString(updated_id='input-string') {
     // 动态生成输入框和提交按钮
-    const input_string = document.getElementById(updated_id).value;
     document.getElementById('search-string').innerHTML = `
         <h3>查找字符串</h3>
         <input id="search-input" type="text" />
-        <button onclick="submitSearch(${JSON.stringify(input_string).replace(/'/g, "\\'").replace(/"/g, "'")})">查找</button>
+        <button onclick="submitSearch('${updated_id}')">查找</button>
         <div id="search-result"></div>
     `;
 }
 
 function submitSearch(origin) {
+    const input_string = document.getElementById(origin).value;
     const search = document.getElementById('search-input').value;
     const data = {
-        OriginString: origin,
+        OriginString: input_string,
         Search: search
     };
     console.log(search);
-    console.log(origin);
+    console.log(input_string);
     fetch('http://localhost:8080/search', {
         method: 'POST',
         headers: {

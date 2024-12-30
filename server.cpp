@@ -28,8 +28,8 @@ string get_mime_type(const string& file_path) {
 
 void handle_decode_string(int client_socket, const string& input_string, const string& file_name) {
     cout << "decode before\n" << input_string << endl;
-    string origin = handle_special_char(input_string);
-    origin = decode(origin);
+    // cout << "origin0\n" << origin << endl;
+    string origin = decode(input_string);
     cout << "origin1\n" << origin << endl;
     origin = refined_string2json(origin);
     cout << "origin\n" << origin << endl;
@@ -42,8 +42,6 @@ void handle_decode_string(int client_socket, const string& input_string, const s
     else{
         ffile_name = file_name;
     }
-    // 保存源码到txt文件
-    save_txt(origin, ffile_name + "_decoded");
       // 找到 "encoded_content" 后的结束位置
     size_t pos = input_string.find("\"encoded_content\":");
     string new_json = input_string;
@@ -57,7 +55,9 @@ void handle_decode_string(int client_socket, const string& input_string, const s
     cout << new_json << endl;
     // 构建响应体
     string response_body = new_json;
-
+    // 保存源码到txt文件
+    origin = handle_special_char(origin);
+    save_txt(origin, ffile_name + "_decoded");
     // 构造 HTTP 响应
     string http_response =
         "HTTP/1.1 200 OK\r\n"                              // 返回成功状态码
@@ -78,8 +78,11 @@ void find_string(int client_socket, const string& input_string, const string& fi
     string ff_string = regex_replace(find_string, regex("\\\\n"), "\n");
     af_string = handle_special_char(af_string);
     ff_string = handle_special_char(ff_string);
+    cout << "af_string: " << af_string << "ff_string: " << ff_string << endl;
     string find_out = get_total_part(af_string, ff_string);
+    cout << "find_out: " << find_out << endl;
     find_out = refined_string2json(find_out);
+    cout << "refined: " << find_out << endl;
     string response_body = "{\n  \"find_content\": \"" + find_out + "\"\n}";
 
     // 构造 HTTP 响应

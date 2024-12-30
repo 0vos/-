@@ -313,7 +313,27 @@ string decode(string name){
             }
         }
     }
-
+    for(int i=0; origin_content[i]!= '\0'; i++){
+        if(origin_content[i]== '\\'){
+            if(origin_content[i+1]== 'n'){
+                string c = "\n";
+                origin_content.replace(i, c.length()+1, "\n");
+            }
+            if(origin_content[i+1]== 't'){
+                string c = "\t";
+                origin_content.replace(i, c.length()+1, "\t");
+            }
+            if(origin_content[i+1]== 'r'){
+                string c = "\r";
+                origin_content.replace(i, c.length()+1, "\r");
+            }
+            if(origin_content[i+1]== '\\'){
+                string c = "\\";
+                origin_content.replace(i, c.length()+1, "\\");
+            }
+        }
+        
+    }
     return origin_content;
 }
 string handle_special_char(string original){
