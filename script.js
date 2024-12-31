@@ -444,7 +444,10 @@ function handleBase64Image(base64Data) {
       img.onload = () => {
         resultDiv.innerHTML = `<h3>Image Preview:</h3>`;
         resultDiv.appendChild(img);
-
+        img.style.width = "1000px";
+        img.style.height = "1000px";
+        img.style.objectFit = "contain";
+        
         const downloadLink = document.createElement("a");
         downloadLink.href = img.src;
         downloadLink.download = "image.png";
